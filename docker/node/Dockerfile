@@ -1,39 +1,41 @@
-FROM node:lts-alpine3.22
+# Usar imagen oficial de Node.js con herramientas de desarrollo
+FROM node:20-alpine AS development
 
-# Argumentos para personalización
-ARG UID=1000
-ARG USERNAME=nodeuser
+# Establecer variables de entorno
+ENV NODE_ENV=development
+ENV HOST=0.0.0.0
+ENV PORT=3000
+ENV CHOKIDAR_USEPOLLING=true
 
-# Instalación de dependencias básicas esenciales
+# Instalar herramientas del sistema necesarias
 RUN apk add --no-cache \
     git \
     curl \
-    && rm -rf /var/lib/apk/* /tmp/* /var/tmp/*
+    bash \
+    openssl
 
-# Crear usuario no root
-RUN adduser -u ${UID} -D -h /home/${USERNAME} ${USERNAME} && \
-    mkdir -p /home/${USERNAME}/.npm && \
-    chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}
-
-# Configuración de npm
-ENV NPM_CONFIG_PREFIX=/home/${USERNAME}/.npm
-ENV PATH="/home/${USERNAME}/.npm/bin:${PATH}"
-
-# Instalación de herramientas globales esenciales
+# Instalar globalmente las herramientas esenciales
 RUN npm install -g \
-    npm@latest \
-    vite \
-    typescript
+    typescript \
+    vite 
+#    @types/node \
+#    nx \
+#    pnpm \
+#    yarn
 
-# Configuración del directorio de trabajo
-WORKDIR /front
+# Crear directorio de trabajo
+WORKDIR /app
 
-# Cambiar al usuario no root
-USER ${USERNAME}
+# Configurar permisos para node_modules
+RUN mkdir -p /app/node_modules && chown -R node:node /app
+RUN npm install -g npm@11.5.2
 
-# Variables de entorno para desarrollo
-ENV NODE_ENV=development
-ENV PATH="/home/${USERNAME}/.npm/bin:${PATH}"
+# Cambiar al usuario node (no root por seguridad)
+USER node
 
-# Comando por defecto
-CMD ["sh"] 
+# Exponer puerto para desarrollo
+EXPOSE 3000 4200 5173 3001
+
+# Comando por defecto (se puede sobrescribir)
+#CMD ["bash"]
+CMD ["sh", "-c", "echo 'Contenedor terminado ejecutar docker-compose up -d' && sleep infinity"]

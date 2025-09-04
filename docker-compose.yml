@@ -34,9 +34,7 @@ services:
     ports:
  # puerto para symfony server
       - 8001:8001
- # puerto para npm
-      - 5173:5173
-    ###> XDEBUG 3 ###
+ ###> XDEBUG 3 ###
     # Use your client IP here
     # Linux: run "ip a | grep docker0"
     # Windows (with WSL2) and Mac: host.docker.internal
@@ -47,20 +45,33 @@ services:
     networks:
       - base-net
 
-#  fe:
-#    container_name: base-fe
-#    build:
-#      context: docker/frontend
-#      args:
-#        UID: $U_ID
-#    volumes:
+  fe:
+    container_name: base-fe
+#    image: node-dev-container
+    build:
+      context: docker/node
+      target: development
+      args:
+        UID: $U_ID
+    volumes:
 #      - ./:/var/www/html/
+      - .:/app
+      - /app/node_modules
+      - ~/.gitconfig:/home/node.gitconfig:ro 
+      - ~/.ssh:/home/node/.ssh:ro
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLIING=true
 #    expose:
 #      - "3000"
-#    ports:
-#      - 3000:3000
-#    networks:
-#      - base-net
+    ports:
+      - 3000:3000
+      - 5173:5173
+    stdin_open: true
+    tty: true
+    networks:
+      - base-net
   db:
     container_name: base-db
     hostname: mariadb.local 
@@ -69,7 +80,7 @@ services:
 #    build:
 #      context: ./docker/database
     ports:
-      - 3307:3306
+      - 3306:3306
     environment:
       MYSQL_ROOT_PASSWORD: "carlos"
       MYSQL_DATABASE: "base"

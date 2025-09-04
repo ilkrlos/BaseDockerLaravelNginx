@@ -25,8 +25,8 @@ RUN apk add --no-cache \
     linux-headers \
     autoconf \
     g++ \
-    nodejs \
-    npm \
+#    nodejs \
+#    npm \
     make && \
     pecl install -f xdebug opcache && \
     docker-php-ext-install intl zip mysqli pdo pdo_mysql gd bcmath ldap && \
