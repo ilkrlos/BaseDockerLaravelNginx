@@ -1,0 +1,88 @@
+version: '3.5'
+
+services:
+  web:
+    container_name: base-web
+    image:
+      nginx
+#    build:
+#      context: ./docker/nginx
+#      args:
+#        UID: $U_ID
+    ports:
+      - 81:80
+    volumes:
+      - ./app-back/public:/var/www/html/minka-back/public
+      - ./app-front/public:/var/www/html/minka-front/public
+      - ./docker/nginx/:/etc/nginx/conf.d/:ro
+    depends_on:
+      - be
+    networks:
+      - base-net
+
+  be:
+    container_name: base-be
+    build:
+      context: docker/php
+      args:
+        UID: $U_ID
+    volumes:
+      - ./:/var/www/html
+    expose:
+      - "8001"
+      - "5173"
+    ports:
+ # puerto para symfony server
+      - 8001:8001
+ # puerto para npm
+      - 5173:5173
+    ###> XDEBUG 3 ###
+    # Use your client IP here
+    # Linux: run "ip a | grep docker0"
+    # Windows (with WSL2) and Mac: host.docker.internal
+    environment:
+      XDEBUG_CLIENT_HOST: 172.17.0.1
+      XDEBUG_CLIENT_PORT: 9003
+      PHP_IDE_CONFIG: serverName=rehv2
+    networks:
+      - base-net
+
+#  fe:
+#    container_name: base-fe
+#    build:
+#      context: docker/frontend
+#      args:
+#        UID: $U_ID
+#    volumes:
+#      - ./:/var/www/html/
+#    expose:
+#      - "3000"
+#    ports:
+#      - 3000:3000
+#    networks:
+#      - base-net
+  db:
+    container_name: base-db
+    hostname: mariadb.local 
+    image:
+      mariadb
+#    build:
+#      context: ./docker/database
+    ports:
+      - 3307:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: "carlos"
+      MYSQL_DATABASE: "base"
+    volumes:
+      - ./db-data:/var/lib/mysql
+    networks:
+      - base-net
+       #command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci'] #Linea para mysql
+    command: --default-authentication-plugin=mysql_native_password #Linea para mariadb
+volumes:
+  db-data:
+
+networks:
+  base-net:
+    driver: bridge
+    #    external: true
