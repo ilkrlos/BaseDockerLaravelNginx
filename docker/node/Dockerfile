@@ -23,6 +23,7 @@ RUN npm install -g \
 #    pnpm \
 #    yarn
 
+
 # Crear directorio de trabajo
 WORKDIR /app
 
