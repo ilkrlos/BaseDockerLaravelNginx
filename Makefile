@@ -4,6 +4,7 @@ OS = $(shell uname)
 UID = $(shell id -u)
 DOCKER_BE = base-be
 DOCKER_FE = base-fe
+DOCKER_NET = base-net
 help: ## Show this help message
 	@echo 'usage: make [target]'
 	@echo
@@ -11,7 +12,7 @@ help: ## Show this help message
 	@egrep '^(.+)\:\ ##\ (.+)' ${MAKEFILE_LIST} | column -t -c 2 -s ':#'
 
 start: ## Start the containers
-	docker network create base-net || true
+	docker network create ${DOCKER_NET} || true
 	cp -n docker-compose.yml.dist docker-compose.yml || true
 	cp -n .env.dist .env || true
 	U_ID=${UID} docker-compose up -d
@@ -23,7 +24,7 @@ restart: ## Restart the containers
 	$(MAKE) stop && $(MAKE) start
 
 build: ## Rebuilds all the containers
-	docker network create base-net || true
+	docker network create ${DOCKER_NET} || true
 	cp -n docker-compose.yml.dist docker-compose.yml || true
 	cp -n .env.dist .env || true
 	U_ID=${UID} docker-compose build
